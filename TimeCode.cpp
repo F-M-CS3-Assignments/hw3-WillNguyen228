@@ -3,6 +3,8 @@
 
 using namespace std;
 
+//Yes, I read the notes. I will be putting several commits in. 
+
 // Function to check for negative values which can be seconds, minutes and hours
 void checkNegative(int value, const string& valueName) {
     if (value < 0) {
