@@ -24,7 +24,8 @@ TimeCode parse_line(const string& line) {
     vector<string> tokens = split(line, ',');  // Everything is comma-separated so we separate by that 
     if (tokens.size() < 4) return TimeCode(); //if it doesn't have a date it will be retuned as a default
 
-    string dateTime = tokens[2]; //Date is in the third column
+    string dateTime = tokens[4]; //Date is in the firth column there is a comma btw the year and the actual time :)))
+    cout << dateTime << endl;
 
     size_t pos = dateTime.find("UTC"); //Checks if there is the UTC part
     if (pos == string::npos) return TimeCode(); //string::npos is a special constant in C++ that indicates "not found."
@@ -35,10 +36,10 @@ TimeCode parse_line(const string& line) {
 
     if (timeComponents.size() != 2) return TimeCode();  // Ensure we are getting XX:XX
 
-    int hours = stoi(timeComponents[0]);
-    int minutes = stoi(timeComponents[1]);
+    int minutes = stoi(timeComponents[0]);
+    int seconds = stoi(timeComponents[1]);
 
-    return TimeCode(hours, minutes, 0);  // Construct the timeCode object
+    return TimeCode(0, minutes, seconds);  // Construct the timeCode object
 }
 
 //This function computes the average launch time
@@ -54,7 +55,7 @@ TimeCode calculate_average_time(const vector<TimeCode>& times) {
 }
 
 int main() {
-    ifstream file("Space_Corrected.csv");
+    ifstream file("Space_Corrected_Short.csv");
     if (!file.is_open()) {
         cerr << "Error opening file!" << endl;
         return 1;
@@ -66,10 +67,15 @@ int main() {
 
     while (getline(file, line)) {
         TimeCode launchT = parse_line(line);
-        launchTimes.push_back(launchT);
+
+        if (launchT.GetMinutes() != 0 || launchT.GetSeconds() != 0) {
+            launchTimes.push_back(launchT);
+        }
     }
 
     file.close();
+
+    cout << launchTimes.size() << " data points." << endl;
 
     if (launchTimes.empty()) {
         cout << "No valid launch times found." << endl;
