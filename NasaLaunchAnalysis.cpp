@@ -22,24 +22,24 @@ vector<string> split(const string& str, char delim) {
 // Function to parse a CSV line and extract the time
 TimeCode parse_line(const string& line) {
     vector<string> tokens = split(line, ',');  // Everything is comma-separated so we separate by that 
-    if (tokens.size() < 4) return TimeCode(); //if it doesn't have a date it will be retuned as a default
+    if (tokens.size() < 4) return -1; //if it doesn't have a date it will be retuned as a default
 
-    string dateTime = tokens[4]; //Date is in the firth column there is a comma btw the year and the actual time :)))
-    cout << dateTime << endl;
+    string dateTime = tokens[4]; //Date is in the fourth column there is a comma btw the year and the actual time :)))
+    // cout << dateTime << endl;
 
     size_t pos = dateTime.find("UTC"); //Checks if there is the UTC part
-    if (pos == string::npos) return TimeCode(); //string::npos is a special constant in C++ that indicates "not found."
+    if (pos == string::npos) return -1; //string::npos is a special constant in C++ that indicates "not found."
 
     //I am using UTC as an anchor point to extract the exact time
     string timePart = dateTime.substr(pos - 6, 5);
     vector<string> timeComponents = split(timePart, ':');
 
-    if (timeComponents.size() != 2) return TimeCode();  // Ensure we are getting XX:XX
+    if (timeComponents.size() != 2) return -1;  // Ensure we are getting XX:XX
 
-    int minutes = stoi(timeComponents[0]);
-    int seconds = stoi(timeComponents[1]);
+    int hours = stoi(timeComponents[0]);
+    int minutes = stoi(timeComponents[1]);
 
-    return TimeCode(0, minutes, seconds);  // Construct the timeCode object
+    return TimeCode(hours, minutes, 0);  // Construct the timeCode object
 }
 
 //This function computes the average launch time
@@ -50,12 +50,13 @@ TimeCode calculate_average_time(const vector<TimeCode>& times) {
     for (const auto& t : times) { // I got all of this from researching Stackoverflow. const prevents t from being changed, auto here automatically assigned t with its type, & prevents copying
         total = total + t;  // 
     }
+    // cout << total.ToString() << endl;
 
     return total / times.size(); 
 }
 
 int main() {
-    ifstream file("Space_Corrected_Short.csv");
+    ifstream file("Space_Corrected.csv");
     if (!file.is_open()) {
         cerr << "Error opening file!" << endl;
         return 1;
@@ -68,7 +69,8 @@ int main() {
     while (getline(file, line)) {
         TimeCode launchT = parse_line(line);
 
-        if (launchT.GetMinutes() != 0 || launchT.GetSeconds() != 0) {
+        if (launchT != -1) {
+            // cout << launchT.ToString() << endl;
             launchTimes.push_back(launchT);
         }
     }
@@ -83,7 +85,7 @@ int main() {
     }
 
     TimeCode avgTime = calculate_average_time(launchTimes);
-    cout << "Average launch time: " << avgTime.ToString() << endl;
+    cout << "AVERAGE: " << avgTime.ToString() << endl;
 
     return 0;
 }

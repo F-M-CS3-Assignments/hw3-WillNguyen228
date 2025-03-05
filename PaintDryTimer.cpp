@@ -5,6 +5,7 @@
 #include <cstdlib> // for random
 #include <cassert> // for assert in the tests() function
 #include "TimeCode.h" // for timecode's (duh)
+#include "TimeCode.cpp"
 
 using namespace std;
 
@@ -19,25 +20,24 @@ struct DryingSnapShot {
 };
 
 long long int get_time_remaining(DryingSnapShot dss){
-	// Replace with your code
-	return 0;
+    time_t currentTime = time(0);
+    time_t endTime = dss.startTime + dss.timeToDry->GetTimeCodeAsSeconds();
+    return endTime - currentTime;
 }
 
 string drying_snap_shot_to_string(DryingSnapShot dss){
-	// Replace with your code
-	return "";
+    long long int remaining = get_time_remaining(dss);
+    return dss.name + " takes " + to_string(remaining) + " seconds";
 }
 
 
 double get_sphere_sa(double rad){
-	// replace with your code
-	return 0;
+    return 4 * M_PI * pow(rad, 2); //This follows the formular for the surface area of a cube 4 * pi * r^2
 }
 
 
 TimeCode *compute_time_code(double surfaceArea){
-	// replace with your code
-	return nullptr;
+	return new TimeCode(0, 0, static_cast<int>(surfaceArea));;
 }
 
 
@@ -75,6 +75,26 @@ void tests(){
 
 int main(){
 	// replace with your code
-	//tests());
-	return 0;
+	tests();
+
+    cout << "Enter the radius of the objects: ";
+    double radius;
+    cin >> radius;
+
+    double surfaceArea = get_sphere_sa(radius);
+    TimeCode *dryingTime = compute_time_code(surfaceArea);
+
+    DryingSnapShot dss {"Batch 1", time(0), dryingTime};
+
+    cout << drying_snap_shot_to_string(dss) << endl;
+
+    while (get_time_remaining(dss) > 0) {
+        cout << "Time remaining: " << get_time_remaining(dss) << " seconds\r";
+        cout.flush();
+        // this_thread::sleep_for(chrono::seconds()); //Delay for 1 seconds
+    }
+
+    cout << "\nPaint has dried!" << endl;
+    delete dryingTime;
+    return 0;
 }
