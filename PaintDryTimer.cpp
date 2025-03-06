@@ -5,7 +5,7 @@
 #include <cstdlib> // for random
 #include <cassert> // for assert in the tests() function
 #include <chrono> // for testing
-#include <thread>
+#include <thread> 
 #include "TimeCode.h" // for timecode's (duh)
 #include "TimeCode.cpp"
 
@@ -29,7 +29,7 @@ long long int get_time_remaining(DryingSnapShot dss){
 
 string drying_snap_shot_to_string(DryingSnapShot dss){
     long long int remaining = get_time_remaining(dss);
-    return dss.name + " takes " + to_string(remaining) + " seconds";
+    return dss.name + " (takes " + dss.timeToDry->ToString() + " to dry) time remaining" + to_string(remaining);
 }
 
 
@@ -39,7 +39,7 @@ double get_sphere_sa(double rad){
 
 
 TimeCode *compute_time_code(double surfaceArea){
-	return new TimeCode(0, 0, static_cast<int>(surfaceArea));;
+	return new TimeCode(0, 0, static_cast<int>(surfaceArea)); //The surface area no matter how high will be distributed to minute and time
 }
 
 
@@ -99,24 +99,25 @@ int main(){
 	// replace with your code
 	tests();
 
-    cout << "Enter the radius of the objects: ";
-    double radius;
-    cin >> radius;
+    vector<DryingSnapShot> dryingBatches;
+    string ans;
 
-    double surfaceArea = get_sphere_sa(radius);
-    TimeCode *dryingTime = compute_time_code(surfaceArea);
+    while (true) {
+        cout << "Choose an option: (A)dd, (V)iew Current Items, (Q)uit: ";
+        cin >> ans;
 
-    DryingSnapShot dss {"Batch 1", time(0), dryingTime};
+        for (char& c : ans) c = toupper(c); //This turns the answer into upper case
 
-    cout << drying_snap_shot_to_string(dss) << endl;
+        if (ans == "A") {
+            double radius;
 
-    while (get_time_remaining(dss) > 0) {
-        cout << "Time remaining: " << get_time_remaining(dss) << " seconds\r";
-        cout.flush();
-        this_thread::sleep_for(chrono::seconds()); //Delay for 1 seconds
+            double surfaceArea = get_sphere_sa(radius);
+            TimeCode *dryingTime = compute_time_code(surfaceArea);
+
+            DryingSnapShot dss {"Batch 1", time(0), dryingTime};
+            cout << drying_snap_shot_to_string(dss) << endl;
+        }
     }
 
-    cout << "\nPaint has dried!" << endl;
-    delete dryingTime;
     return 0;
 }
