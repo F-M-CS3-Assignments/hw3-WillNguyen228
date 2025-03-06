@@ -1,3 +1,6 @@
+//Author: Will Nguyen
+//Date: 05/03/2025
+
 #include <ctime> // for time(0)
 #include <iostream> // for cin and cout
 #include <cmath> // for M_PI and others
