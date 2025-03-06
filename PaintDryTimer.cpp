@@ -19,19 +19,30 @@ struct DryingSnapShot {
 	string name;
 	time_t startTime;
 	TimeCode *timeToDry;
+    bool done; //I added this to keep track whether it has already been marked as "DONE!". So that it can be removed after it has been shown. 
 };
 
-long long int get_time_remaining(DryingSnapShot dss){
+long long int get_time_remaining(DryingSnapShot dss){ 
     time_t currentTime = time(0);
     time_t endTime = dss.startTime + dss.timeToDry->GetTimeCodeAsSeconds();
-    return endTime - currentTime;
+    long long int remainingTime = endTime - currentTime;
+
+    return remainingTime;
 }
 
 string drying_snap_shot_to_string(DryingSnapShot dss){
-    long long int remaining = get_time_remaining(dss);
-    return dss.name + " (takes " + dss.timeToDry->ToString() + " to dry) time remaining" + to_string(remaining);
-}
+    long long int remainingTime = get_time_remaining(dss);
 
+    TimeCode tc = TimeCode(0, 0, remainingTime);
+
+    string remainingTimeStr = tc.ToString();
+    if (remainingTime <= 0) {
+        remainingTimeStr = "DONE!";
+    }
+
+    string result = dss.name + " (takes " + dss.timeToDry->ToString() + " to dry) time remaining " + remainingTimeStr;
+    return result;
+}
 
 double get_sphere_sa(double rad){
     return 4 * M_PI * pow(rad, 2); //This follows the formular for the surface area of a cube 4 * pi * r^2
@@ -110,12 +121,53 @@ int main(){
 
         if (ans == "A") {
             double radius;
+            cout << "radius: ";
+            cin >> radius;
 
             double surfaceArea = get_sphere_sa(radius);
             TimeCode *dryingTime = compute_time_code(surfaceArea);
 
-            DryingSnapShot dss {"Batch 1", time(0), dryingTime};
+            DryingSnapShot dss {"Batch " + to_string(rand()), time(0), dryingTime};
+            dryingBatches.push_back(dss);
             cout << drying_snap_shot_to_string(dss) << endl;
+        }
+        else if (ans == "V") {
+            if (dryingBatches.empty()) {
+                cout << "No batches being tracked.\n";
+            } else {
+                for (size_t i = 0; i < dryingBatches.size(); ++i) {
+                    // Get the current drying batch
+                    DryingSnapShot& dss = dryingBatches[i];
+
+                    string text = drying_snap_shot_to_string(dss);
+                    //This checks if the word Done! is found in the string so that we can display it 
+                    if (dss.done == false && text.find("DONE!") != string::npos )  {
+                        cout << drying_snap_shot_to_string(dss) << endl;
+                        dss.done = true;
+                        continue;
+                    } 
+
+                    if (dss.done == true) {
+                        delete dss.timeToDry; // Delete timecode object before erasing to prevent memory leak
+                        dryingBatches.erase(dryingBatches.begin() + i);
+                        --i; // this is to adjust the index since we removed an element 
+                        continue;
+                    }
+                    
+                    cout << drying_snap_shot_to_string(dss) << endl; //print it as normal if it is not done
+                }
+                cout << dryingBatches.size() << " batches being tracked.\n";
+            }
+        }
+        else if (ans == "Q") {
+            // Clean up dynamic memory before exiting
+            for (auto& dss : dryingBatches) {
+                delete dss.timeToDry; // Deleting dynamically allocated timeToDry
+            }
+            break;
+        }
+        else {
+            cout << "Invalid option. Please try again.\n";
         }
     }
 
